@@ -30,9 +30,24 @@ impl Chip8 {
         chip8
     }
 
-    pub fn inject_data(&mut self, data: [u8; 4096 - 512]) {
-        for i in 0..(4096 - 512) {
-            println!("{}", data[i]);
+    pub fn inject_data(&mut self, injection: Vec<u8>) {
+        for i in 0..injection.len() {
+            self.memory[0x200 + i] = injection[i];
         }
+    }
+
+    pub fn cycle(&mut self) {
+        self.opcode = (self.memory[self.pc as usize] as u16) << 8 | (self.memory[self.pc as usize + 1] as u16);
+        println!("Opcode: 0x{:x}", self.opcode);
+
+        match self.opcode & 0xF000 {
+            0x2000 => self.op_2NNN(),
+            _ => println!("No opcode!")
+        }
+    }
+
+    // 2NNN: Calls subroutine at NNN.
+    fn op_2NNN(&mut self) {
+        println!("Process opcode 2NNN");
     }
 }

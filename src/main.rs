@@ -1,12 +1,20 @@
 use chip8::Chip8;
 
+use std::fs;
+
 mod chip8;
 
 fn main() {
-    let mut chip8 = Chip8::init();
+    let mut system = Chip8::init();
+    let path = format!("rom/pong2.c8");
+    let payload = fs::read(path);
+    let payload = match payload {
+        Ok(g) => g,
+        Err(_) => panic!("Error!")
+    };
+    system.inject_data(payload);
 
-    let mut payload: [u8; 4096 - 512];
-    // Must initialize all of array upon creation?
-
-    chip8.inject_data(payload);
+    loop {
+        system.cycle();
+    }
 }
