@@ -1,18 +1,21 @@
-use chip8::Chip8;
+use chip8::CHIP8;
 
 use std::fs;
 
 mod chip8;
 
 fn main() {
-    let mut system = Chip8::init();
-    let path = format!("rom/pong2.c8");
-    let payload = fs::read(path);
+    let mut system = CHIP8::init();
+    
+    let payload_path = "rom/pong2.c8";
+    let payload = fs::read(payload_path);
+
     let payload = match payload {
         Ok(g) => g,
-        Err(_) => panic!("Error!")
+        Err(_) => panic!("Couldn't retrieve payload! Path given: '{}'", payload_path)
     };
-    system.inject_data(payload);
+    
+    system.inject(payload);
 
     loop {
         system.cycle();
