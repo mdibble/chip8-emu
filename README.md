@@ -3,7 +3,7 @@ Emulator of the CHIP-8 instruction set. Nearly all of the opcodes are included, 
 
 # Installation
 The front-end was done with <code>SDL2</code>, so you'll need to have that installed to be able to run the emulator. Once it is installed, you can
-just clone the repository and run <code>cargo build</code>.
+just clone the repository and run <code>cargo run</code>, which should compile and run the program.
 
 # Usage
 Different ROMs can be loaded by editing the <code>path</code> variable in <code>main.rs</code>. Not the most user-friendly method, but it works. I've
