@@ -1,6 +1,12 @@
 extern crate rand;
 
 use rand::Rng;
+use sdl2::render::WindowCanvas;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use sdl2::keyboard::Keycode;
+use sdl2::event::Event;
+use sdl2::EventPump;
 
 pub struct CHIP8 {
     memory: [u8; 4096], // System memory (4K, 8-bit values)
@@ -13,7 +19,7 @@ pub struct CHIP8 {
     delay_timer: u8,    // Delay timer (8-bit value)
     sound_timer: u8,    // Sound timer (8-bit value)
     gfx: [u8; 64 * 32], // Graphics (2048 pixels, 64x32 arrangement, 8-bit values)
-    key: [bool; 16]       // Keypad (Status of 16 keys [0-F], 8-bit values)
+    pub key: [bool; 16]       // Keypad (Status of 16 keys [0-F], 8-bit values)
 }
 
 impl CHIP8 {
@@ -270,14 +276,6 @@ impl CHIP8 {
                 }
             }
         }
-        
-        // println!();
-        // for i in 0..32 {
-        //     for j in 0..64 {
-        //         print!("{} ", self.gfx[j + (i * 64)] as u8);
-        //     }
-        //     println!();
-        // }
 
         self.pc += 2;
     }
@@ -355,6 +353,65 @@ impl CHIP8 {
             self.v[index] = self.memory[self.i as usize + index];
         }
         self.pc += 2;
+    }
+
+    pub fn process_input(&mut self, event_pump: &mut EventPump) {
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::KeyDown { keycode: Some(Keycode::Num1), .. } => self.key[1] = true,
+                Event::KeyDown { keycode: Some(Keycode::Num2), .. } => self.key[2] = true,
+                Event::KeyDown { keycode: Some(Keycode::Num3), .. } => self.key[3] = true,
+                Event::KeyDown { keycode: Some(Keycode::Num4), .. } => self.key[12] = true,
+                Event::KeyDown { keycode: Some(Keycode::Q), .. } => self.key[4] = true,
+                Event::KeyDown { keycode: Some(Keycode::W), .. } => self.key[5] = true,
+                Event::KeyDown { keycode: Some(Keycode::E), .. } => self.key[6] = true,
+                Event::KeyDown { keycode: Some(Keycode::R), .. } => self.key[13] = true,
+                Event::KeyDown { keycode: Some(Keycode::A), .. } => self.key[7] = true,
+                Event::KeyDown { keycode: Some(Keycode::S), .. } => self.key[8] = true,
+                Event::KeyDown { keycode: Some(Keycode::D), .. } => self.key[9] = true,
+                Event::KeyDown { keycode: Some(Keycode::F), .. } => self.key[14] = true,
+                Event::KeyDown { keycode: Some(Keycode::Z), .. } => self.key[10] = true,
+                Event::KeyDown { keycode: Some(Keycode::X), .. } => self.key[0] = true,
+                Event::KeyDown { keycode: Some(Keycode::C), .. } => self.key[11] = true,
+                Event::KeyDown { keycode: Some(Keycode::V), .. } => self.key[15] = true,
+                Event::KeyUp { keycode: Some(Keycode::Num1), .. } => self.key[1] = false,
+                Event::KeyUp { keycode: Some(Keycode::Num2), .. } => self.key[2] = false,
+                Event::KeyUp { keycode: Some(Keycode::Num3), .. } => self.key[3] = false,
+                Event::KeyUp { keycode: Some(Keycode::Num4), .. } => self.key[12] = false,
+                Event::KeyUp { keycode: Some(Keycode::Q), .. } => self.key[4] = false,
+                Event::KeyUp { keycode: Some(Keycode::W), .. } => self.key[5] = false,
+                Event::KeyUp { keycode: Some(Keycode::E), .. } => self.key[6] = false,
+                Event::KeyUp { keycode: Some(Keycode::R), .. } => self.key[13] = false,
+                Event::KeyUp { keycode: Some(Keycode::A), .. } => self.key[7] = false,
+                Event::KeyUp { keycode: Some(Keycode::S), .. } => self.key[8] = false,
+                Event::KeyUp { keycode: Some(Keycode::D), .. } => self.key[9] = false,
+                Event::KeyUp { keycode: Some(Keycode::F), .. } => self.key[14] = false,
+                Event::KeyUp { keycode: Some(Keycode::Z), .. } => self.key[10] = false,
+                Event::KeyUp { keycode: Some(Keycode::X), .. } => self.key[0] = false,
+                Event::KeyUp { keycode: Some(Keycode::C), .. } => self.key[11] = false,
+                Event::KeyUp { keycode: Some(Keycode::V), .. } => self.key[15] = false,
+                _ => {}
+            }
+        }
+    }
+
+    pub fn draw(&mut self, canvas: &mut WindowCanvas) {
+        if (self.opcode & 0xF000) as u16 == 0xD000 {
+            canvas.clear();
+            for row in 0..32 {
+                for col in 0..64 {
+                    if self.gfx[(row * 64) + col] == 1 {
+                        canvas.set_draw_color(Color::RGB(255, 255, 255));
+                        canvas.fill_rect(Rect::new((col * 10) as i32, (row * 10) as i32, 10, 10)).unwrap();
+                    }
+                    else {
+                        canvas.set_draw_color(Color::RGB(0, 0, 0));
+                        canvas.fill_rect(Rect::new((col * 10) as i32, (row * 10) as i32, 10, 10)).unwrap();
+                    }
+                }
+            }
+            canvas.present();
+        }
     }
 }
 
