@@ -93,6 +93,7 @@ impl CHIP8 {
             (0xE, _, 0x9, 0xE) => self.op_ex9e(op2),
             (0xE, _, 0xA, 0x1) => self.op_exa1(op2),
             (0xF, _, 0x0, 0x7) => self.op_fx07(op2),
+            (0xF, _, 0x0, 0xA) => self.op_fx0a(op2),
             (0xF, _, 0x1, 0x5) => self.op_fx15(op2),
             (0xF, _, 0x1, 0x8) => self.op_fx18(op2),
             (0xF, _, 0x1, 0xE) => self.op_fx1e(op2),
@@ -269,10 +270,10 @@ impl CHIP8 {
             pixel = self.memory[self.i as usize + row];
             for col in 0..w as usize {
                 if pixel & (0x80 >> col) != 0 {
-                    if self.gfx[x_coord as usize + col + ((y_coord as usize + row) * 64)] == 1 {
+                    if self.gfx[((x_coord as usize + col)) % 64 + (((y_coord as usize + row) % 32) * 64)] == 1 {
                         self.v[0xF] = 1;
                     }
-                    self.gfx[x_coord as usize + col + ((y_coord as usize + row) * 64)] ^= 1;
+                    self.gfx[((x_coord as usize + col)) % 64 + (((y_coord as usize + row) % 32) * 64)] ^= 1;
                 }
             }
         }
@@ -304,6 +305,17 @@ impl CHIP8 {
     fn op_fx07(&mut self, x: u8) {
         self.v[x as usize] = self.delay_timer;
         self.pc += 2;
+    }
+
+    // FX0A: A key press is awaited, and then stored in VX
+    fn op_fx0a(&mut self, x: u8) {
+        for key in 0..=15 as usize {
+            if self.key[key] == true {
+                self.v[x as usize] = key as u8;
+                self.pc += 2;
+                break;
+            }
+        }
     }
 
     // FX15: Sets the delay timer to VX
